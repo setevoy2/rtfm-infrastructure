@@ -4,7 +4,7 @@
 
 - name: "Read AWS credenatials vault {{ env }}_vars.yml"
   include_vars:
-    file: "/home/setevoy/Work/RTFM/Bitbucket/rtfm-infrastructure/aws-credenatials/aws-credenatials.yml"
+    file: "{{ local_private_repo_location }}/aws-credenatials/aws-credenatials.yml"
 
 - name: "Create {{ env }} stack"
   cloudformation:

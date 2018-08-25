@@ -3,7 +3,6 @@
 HELP="\n\t-c: run CloudFormation role (--tags infra) to create a stack
 \n\t-a: run all App roles excluding CF (--tags app), to provision an EC2 instance
 \n\t-t: tags to apply, enclosed with double quotes and separated by commas, i.e. \"common, web\"
-\n\t-d: run deploy role (--tags deploy) to deploy an application
 \n\t-S: skip dry-run
 \n\t-e: environment to be used in --limit, defaults to \"rtfm-dev\"
 \n\t-v: vault-password file, if none -  default ~/Work/RTFM/Bitbucket/rtfm-infrastructure/aws-credenatials/rtfm_ansible_vault_pass
@@ -26,7 +25,7 @@ VAULT="/home/setevoy/Work/RTFM/Bitbucket/rtfm-infrastructure/aws-credenatials/rt
 # -r
 RSA_KEY="/home/setevoy/Work/RTFM/Bitbucket/rtfm-infrastructure/aws-credenatials/rtfm-dev-eu-west-1a.pem"
 
-while getopts "caSe:v:r:hd:t:" opt; do
+while getopts "caSe:v:r:ht:" opt; do
 	case $opt in
 		c)
 			TAGS=infra
@@ -37,9 +36,6 @@ while getopts "caSe:v:r:hd:t:" opt; do
 			;;
         t)
             TAGS=$OPTARG
-            ;;
-        d)
-            TAGS=deploy
             ;;
         S)
             SKIP=1

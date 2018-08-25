@@ -122,3 +122,8 @@
   copy:
     src: "files/vimrc"
     dest: "/home/setevoy/.vimrc"
+
+- name: "Copy .vimrc to the 'admin' user"
+  copy:
+    src: "files/vimrc"
+    dest: "/home/admin/.vimrc"

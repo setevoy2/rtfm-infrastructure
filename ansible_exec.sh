@@ -5,9 +5,9 @@ HELP="\n\t-c: run CloudFormation role (--tags infra) to create a stack
 \n\t-t: tags to apply, enclosed with double quotes and separated by commas, i.e. \"common, web\"
 \n\t-d: run deploy role (--tags deploy) to deploy an application
 \n\t-S: skip dry-run
-\n\t-e: environment to be used in --limit, defaults to \"mobilebackend-dev\"
-\n\t-v: vault-password file, if none -  default ~/.ssh/mobilebackend_aws_credentials.yml
-\n\t-r: RSA key to be used, defaults to /home/setevoy/Work/BetterMe/aws-credentials/bm-backend.pem
+\n\t-e: environment to be used in --limit, defaults to \"rtfm-dev\"
+\n\t-v: vault-password file, if none -  default ~/Work/RTFM/Bitbucket/rtfm-infrastructure/aws-credenatials/rtfm_ansible_vault_pass
+\n\t-r: RSA key to be used, defaults to ~/Work/RTFM/Bitbucket/rtfm-infrastructure/aws-credenatials/rtfm-dev-eu-west-1a.pem
 \n"
 
 [[ "$#" -lt 1 ]] && { echo -e $HELP; exit 1 ; }

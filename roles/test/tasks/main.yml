@@ -1,0 +1,8 @@
+- name: Copy file
+  copy:
+    src: "/home/setevoy/Work/RTFM/testfile"
+    dest:  "/home/setevoy/testfile"
+
+- name: Test task
+  debug:
+    msg: "It works!"

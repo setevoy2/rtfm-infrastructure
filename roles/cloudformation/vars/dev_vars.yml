@@ -1,0 +1,5 @@
+termination_protection: no
+key_name: "rtfm-dev-eu-west-1a"
+ec2_instance_type: "t2.nano"
+data_ebs_id: "vol-09ad53faabe393c98"
+backups_ebs_id: "vol-0c5f083506a98b985"

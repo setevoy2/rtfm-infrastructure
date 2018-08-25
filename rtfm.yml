@@ -1,0 +1,19 @@
+- hosts: all
+  become:
+    true
+
+  roles:
+    - role: test
+      tags: test
+    - role: cloudformation
+      tags: infra
+    - role: common
+      tags: common, app
+    - role: letsencrypt
+      tags: ssl, app
+    - role: nginx
+      tags: nginx, web, app
+    - role: php-fpm
+      tags: php, web, app
+    - role: mysql
+      tags: db, app

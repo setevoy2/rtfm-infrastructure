@@ -1,0 +1,54 @@
+- name: "Read private env-specific variables from the {{ local_private_repo_location}}/vars/{{ env }}_web_projects.yml"
+  include_vars:
+    file: "{{ local_private_repo_location}}/vars/{{ env }}_web_projects.yml"
+
+- name: "Install Let's Encrypt client"
+  apt:
+    name=letsencrypt
+    state=latest
+
+- name: "Stop NGINX"
+  systemd:
+    name: nginx
+    state: stopped
+  ignore_errors: true
+
+- name: "Check existing certificates"
+  command: "ls -1 /etc/letsencrypt/live/"
+  register: live_certs
+  ignore_errors: true
+
+- name: "Certs found"
+  debug:
+    msg: "{{ live_certs.stdout }}"
+
+- name: "Obtain certificates"
+  command: "letsencrypt certonly --standalone --agree-tos -m {{ notify_email }} -d {{ item.1 }}"
+#  debug:
+#    msg: "getting cert {{ item.1 }}"
+  with_subelements:
+    - "{{ web_projects }}"
+    - domains 
+  when: "item.1 not in live_certs.stdout_lines"
+
+- name: "Start NGINX"
+  systemd:
+    name: nginx
+    state: started
+  ignore_errors: true
+
+- name: "Update renewal settings to web-root"
+  lineinfile:
+    dest: "/etc/letsencrypt/renewal/{{ item.1 }}.conf"
+    regexp: '^authenticator '
+    line: "authenticator = webroot"
+    state: present
+  with_subelements:
+    - "{{ web_projects }}"
+    - domains
+
+- name: "Add Let's Encrypt cronjob for cert renewal"
+  cron:
+    name: letsencrypt_renewal
+    special_time: weekly
+    job: letsencrypt renew --webroot -w /var/www/html/ &> /var/log/letsencrypt/letsencrypt.log && service nginx reload

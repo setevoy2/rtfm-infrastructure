@@ -1,0 +1,79 @@
+- name: "Read private env-specific variables from the {{ local_private_repo_location}}/vars/{{ env }}_web_projects.yml"
+  include_vars:
+    file: "{{ local_private_repo_location}}/vars/{{ env }}_web_projects.yml"
+
+- name: "Add web-users"
+  user:
+    name: "{{ item.name }}"
+    shell: "/usr/sbin/nologin"
+  with_items: "{{ web_projects }}"
+  when: '"setevoy" not in  item.name'
+
+- name: "Check {{ web_data_root_prefix }} directories for virtual hosts"
+  file:
+    path: "{{ web_data_root_prefix }}/{{ item.0.name }}/{{ item.1 }}"
+    state: directory
+    owner: "{{ item.0.name }}"
+    group: "{{ item.0.name }}"
+    recurse: yes
+  with_subelements:
+    - "{{ web_projects }}"
+    - domains
+
+- name: "Install NGINX"
+  apt:
+    name: nginx
+
+- name: "Replace NGINX config"
+  template:
+    src: "templates/nginx.conf.j2"
+    dest: "/etc/nginx/nginx.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+
+- name: "Generate dhparams"
+  shell: "openssl dhparam -out /etc/nginx/dhparams.pem 2048"
+  args:
+    creates: "/etc/nginx/dhparams.pem"
+
+- name: "Copy Status HTTP auth file"
+  copy:
+    src: "{{ local_private_repo_location }}/nginx/files/htpasswd_{{ item.name }}"
+    dest:  "{{ web_data_root_prefix }}/{{ item.name }}/.htpasswd_{{ item.name }}"
+    owner: "www-data"
+    group: "www-data"
+    mode: 0600
+  with_items: "{{ web_projects }}"
+  ignore_errors: True
+
+- name: "Add NGINX virtualhosts configs"
+  template:
+    src: "{{ local_private_repo_location }}/nginx/templates/{{ env }}/{{ item.1 }}.conf.j2"
+    dest: "/etc/nginx/conf.d/{{ item.1 }}.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  with_subelements:
+    - "{{ web_projects }}"
+    - domains
+
+- name: "Check NGINX configs"
+  shell: "/usr/sbin/nginx -t"
+  register: nginx_config_status
+
+- name: "NGINX test status"
+  debug:
+   msg: "{{ nginx_config_status }}"
+
+- name: "NGINX test return code"
+  debug:
+    msg: "{{ nginx_config_status.rc }}"
+
+- name: "Service NGINX restart and enable on boot"
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: nginx_config_status.rc == 0

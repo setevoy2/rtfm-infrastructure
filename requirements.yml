@@ -1,0 +1,3 @@
+- src: SimpliField.logrotate
+- src: jnv.unattended-upgrades
+- src: geerlingguy.docker

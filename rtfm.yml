@@ -3,17 +3,61 @@
     true
 
   roles:
+
     - role: test
       tags: test
+
     - role: cloudformation
       tags: infra
+
     - role: common
       tags: common, app
-    - role: letsencrypt
-      tags: ssl, app
-    - role: nginx
-      tags: nginx, web, app
-    - role: php-fpm
-      tags: php, web, app
+
+    - role: exim
+      tags: exim, app
+
+    - role: geerlingguy.docker
+      docker_users:
+        - admin
+      tags: docker, app
+
+    - role: jnv.unattended-upgrades
+      unattended_mail: "{{ notify_email }}"
+      unattended_origins_patterns:
+      - 'origin=Debian,archive=${distro_codename}-security'
+      unattended_automatic_reboot: false
+      unattended_clean_interval: 10
+      tags: upgrades, app
+
+# disabled due to the "too many certs" error from LetsEncrypt
+# proceed after week
+#    - role: letsencrypt
+#      tags: ssl, app
+
+#    - role: nginx
+#      tags: nginx, web, app
+
+#    - role: php-fpm
+#      tags: php-fpm, web, app
+
     - role: mysql
-      tags: db, app
+      tags: mysql, app
+
+    - role: SimpliField.logrotate
+      logrotate_applications:
+      - name: nginx
+        definitions:
+        - logs:
+          - /var/log/nginx*.log
+          options:
+            - size 100M
+            - rotate 5
+            - daily
+            - missingok
+            - notifempty
+            - compress
+            - create 0640 www-data adm
+            - postrotate
+                systemctl reload nginx.service
+            - endscript
+      tags: logrotate, app

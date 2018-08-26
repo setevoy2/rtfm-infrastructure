@@ -24,14 +24,14 @@
 - name: "Check if {{ db_datadir }}/mysql present"
   stat:
     path: "{{ db_datadir }}/mysql"
-  register: db_default_dir
+  register: db_data_dir
 
 - name: "Synchronize /var/lib/mysql with {{ db_datadir }}"
   synchronize:
     src: "/var/lib/mysql/"
     dest: "{{ db_datadir }}"
   delegate_to: "{{ inventory_hostname }}"
-  when: not db_default_dir.stat.exists and not db_default_dir.stat.exists
+  when: not db_data_dir.stat.exists and not db_data_dir.stat.exists
 
 - name: "Change 'datadir' to the {{ db_datadir }}"
   lineinfile:
@@ -51,7 +51,7 @@
   file:
     state: absent
     path: "/var/lib/mysql/"
-  when: db_default_dir.stat.exists and db_default_dir.stat.exists
+  when: db_data_dir.stat.exists and db_data_dir.stat.exists
 
 - name: "Update mysql root password"
   mysql_user:

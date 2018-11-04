@@ -1,0 +1,12 @@
+- name: "download NGINX Amplify agent"
+  shell: "cd /tmp && curl -L -O https://github.com/nginxinc/nginx-amplify-agent/raw/master/packages/install.sh"
+
+- name: "Install NGINX Amplify agent"
+  shell: "cd /tmp && API_KEY={{ amplify_api_key }} sh ./install.sh"
+
+- name: "NGINX Amplify start and enable on boot"
+  systemd:
+    name: amplify-agent
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

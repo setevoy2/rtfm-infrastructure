@@ -58,6 +58,14 @@
     - "{{ web_projects }}"
     - domains
 
+- name: "Add NGINX Stub Status config"
+  template:
+    src: "{{ local_private_repo_location }}/nginx/templates/{{ env }}/stub_status.conf.j2"
+    dest: "/etc/nginx/conf.d/stub_status.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+
 - name: "Check NGINX configs"
   shell: "/usr/sbin/nginx -t"
   register: nginx_config_status

@@ -12,56 +12,25 @@
     state: installed
   with_items: 
     - mariadb-server
-    - python-mysqldb
 
-- name: "Create {{ db_datadir }}"
-  file:
-    path: "{{ db_datadir }}"
-    state: directory
-    owner: "mysql"
-    group: "mysql"
+# error with:
+# fatal: [do.ssh.dev.rtfm.co.ua]: FAILED! => {"changed": false, "msg": "unable to connect to database, check login_user and login_password are correct or /root/.my.cnf has the credentials. Exception message: (1045, u\"Access denied for user 'root'@'localhost' (using password: NO)\")"} 
+# github issue: https://github.com/ansible/ansible/issues/4320
 
-- name: "Check if {{ db_datadir }}/mysql present"
-  stat:
-    path: "{{ db_datadir }}/mysql"
-  register: db_data_dir
-
-- name: "Synchronize /var/lib/mysql with {{ db_datadir }}"
-  synchronize:
-    src: "/var/lib/mysql/"
-    dest: "{{ db_datadir }}"
-  delegate_to: "{{ inventory_hostname }}"
-  when: not db_data_dir.stat.exists and not db_data_dir.stat.exists
-
-- name: "Change 'datadir' to the {{ db_datadir }}"
-  lineinfile:
-    dest: "/etc/mysql/mariadb.conf.d/50-server.cnf"
-    regexp: '^datadir'
-    line: "datadir = {{ db_datadir }}"
-    state: present
-
-- name: "MariaDB restart and enable on boot"
-  systemd:
-    name: mariadb
-    state: restarted
-    enabled: yes
-    daemon_reload: yes
-
-- name: "Delete default /var/lib/mysql"
-  file:
-    state: absent
-    path: "/var/lib/mysql/"
-  when: db_data_dir.stat.exists and db_data_dir.stat.exists
+#- name: "Update mysql root password"
+#  mysql_user:
+#    name: "{{ db_root_user }}"
+#    host: "{{ db_root_host }}"
+#    password: "{{ db_root_pass }}"
+#    login_user: "{{ db_root_user }}"
+#    login_password: ""
+#    login_host: "{{ db_root_host }}"
+#    check_implicit_admin: yes
+#    priv: "*.*:ALL,GRANT"
+#  ignore_errors: true
 
 - name: "Update mysql root password"
-  mysql_user:
-    name: "{{ db_root_user }}"
-    host: "{{ db_root_host }}"
-    password: "{{ db_root_pass }}"
-    login_user: "{{ db_root_user }}"
-    login_password: "{{ db_root_pass }}"
-    check_implicit_admin: yes
-    priv: "*.*:ALL,GRANT"
+  command: "mysqladmin -u {{ db_root_user }} -p{{ db_root_pass }} password {{ db_root_pass }}"
 
 - name: "Remove anonymous user"
   mysql_user:
@@ -107,3 +76,10 @@
   with_subelements:
     - "{{ db_projects }}"
     - databases
+
+- name: "MariaDB restart and enable on boot"
+  systemd:
+    name: mariadb
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

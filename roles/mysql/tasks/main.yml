@@ -32,6 +32,12 @@
 - name: "Update mysql root password"
   command: "mysqladmin -u {{ db_root_user }} -p{{ db_root_pass }} password {{ db_root_pass }}"
 
+- name: "Disable root@localhost NOPASSWD login"
+  command: "{{ item }}"
+  with_items:
+   - "mysql -u {{ db_root_user }} -p{{ db_root_pass }} --execute=\"UPDATE mysql.user SET plugin = '' WHERE user = 'root' AND host = 'localhost'\""
+   - "mysql -u {{ db_root_user }} -p{{ db_root_pass }} --execute=\"FLUSH PRIVILEGES\""
+
 - name: "Remove anonymous user"
   mysql_user:
     name: ''
@@ -39,12 +45,6 @@
     state: absent
     login_user: "{{ db_root_user }}"
     login_password: "{{ db_root_pass }}"
-
-- name: "Disable root@localhost NOPASSWD login"
-  command: "{{ item }}"
-  with_items:
-   - "mysql -u {{ db_root_user }} -p{{ db_root_pass }} --execute=\"UPDATE mysql.user SET plugin = '' WHERE user = 'root' AND host = 'localhost'\""
-   - "mysql -u {{ db_root_user }} -p{{ db_root_pass }} --execute=\"FLUSH PRIVILEGES\""
 
 - name: "Create databases"
   mysql_db:

@@ -8,6 +8,8 @@
   with_items:
        - python-apt
        - python-pymysql
+       - python-configparser
+       - python-boto3
        - mailutils
        - curl
        - dnsutils

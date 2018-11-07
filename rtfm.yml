@@ -59,3 +59,9 @@
 
     - role: mysql
       tags: mysql, app
+
+    - role: simple-backup
+      tags: backup, app
+
+    - role: firefly
+      tags: firefly

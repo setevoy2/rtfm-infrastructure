@@ -1,0 +1,35 @@
+- name: "Read private env-specific variables from the {{ local_private_repo_location}}/vars/{{ env }}_web_projects.yml"
+  include_vars:
+    file: "{{ local_private_repo_location}}/vars/{{ env }}_db_projects.yml"
+
+- name: "Create Firefly III home dir /opt/firefly"
+  file:
+    path: "/opt/firefly"
+    state: directory
+    owner: "setevoy"
+    group: "setevoy"
+    recurse: yes
+
+- name: "Copy Compose file"
+  template:
+    src: "{{ local_private_repo_location }}/firefly/templates/{{ env }}/firefly-compose.yml"
+    dest: "/opt/firefly/firefly-compose.yml"
+    owner: "setevoy"
+    group: "setevoy"
+    mode: 0644
+  with_items: "{{ db_projects }}"
+  when: "'setevoy' in item.name"
+
+- name: "Copy systemd service file"
+  template:
+    src: "templates/firefly-client-systemd.j2"
+    dest: "/etc/systemd/system/firefly.service"
+    owner: "root"
+    group: "root"
+    mode: 0644  
+
+- name: "Service Firefly restart and enable on boot"
+  systemd:
+    name: "firefly"
+    state: restarted
+    enabled: yes

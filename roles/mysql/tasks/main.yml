@@ -2,32 +2,12 @@
   include_vars:
     file: "{{ local_private_repo_location}}/vars/{{ env }}_db_projects.yml"
 
-#- name: "Read private env-specific root credentials from the {{ local_private_repo_location}}/vars/{{ env }}_db_root.yml"
-#  include_vars:
-#    file: "{{ local_private_repo_location}}/vars/{{ env }}_db_root.yml"
-
 - name: "Install MariaDB server"
   package:
     name: "{{ item }}"
     state: installed
   with_items: 
     - mariadb-server
-
-# error with:
-# fatal: [do.ssh.dev.rtfm.co.ua]: FAILED! => {"changed": false, "msg": "unable to connect to database, check login_user and login_password are correct or /root/.my.cnf has the credentials. Exception message: (1045, u\"Access denied for user 'root'@'localhost' (using password: NO)\")"} 
-# github issue: https://github.com/ansible/ansible/issues/4320
-
-#- name: "Update mysql root password"
-#  mysql_user:
-#    name: "{{ db_root_user }}"
-#    host: "{{ db_root_host }}"
-#    password: "{{ db_root_pass }}"
-#    login_user: "{{ db_root_user }}"
-#    login_password: ""
-#    login_host: "{{ db_root_host }}"
-#    check_implicit_admin: yes
-#    priv: "*.*:ALL,GRANT"
-#  ignore_errors: true
 
 - name: "Update mysql root password"
   command: "mysqladmin -u {{ db_root_user }} -p{{ db_root_pass }} password {{ db_root_pass }}"
@@ -56,18 +36,11 @@
     - "{{ db_projects }}"
     - databases
 
-- name: "Create projects users"
-  mysql_user:
-    name: "{{ item.key }}"
-    password: "{{ item.value.password }}"
-    state: present
-    login_user: "{{ db_root_user }}"
-    login_password: "{{ db_root_pass }}"
-  with_dict: "{{ db_users }}"
-
-- name: "Grant permissions"
+- name: "Create users and grant permissions"
   mysql_user:
     name: "{{ item.0.name }}"
+    password: "{{ item.0.password }}"
+    host: "{{ item.0.host }}"
     priv: "{{ item.1 }}.*:ALL"
     append_privs: "yes"
     state: present
@@ -76,6 +49,13 @@
   with_subelements:
     - "{{ db_projects }}"
     - databases
+
+- name: "Set bind-address in the /etc/mysql/mariadb.conf.d/50-server.cnf"
+  lineinfile:
+    dest: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+    regexp: '^bind-address'
+    line: "bind-address = 0.0.0.0"
+    state: present
 
 - name: "MariaDB restart and enable on boot"
   systemd:

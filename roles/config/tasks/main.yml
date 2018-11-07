@@ -7,6 +7,9 @@
   apt: name={{item}} state=present
   with_items:
        - python-apt
+       - python-pymysql
+       - python-configparser
+       - python-boto3
        - mailutils
        - curl
        - dnsutils
@@ -22,31 +25,6 @@
        - mysql-client
        - tree
        - rsync
-
-- name: "Create partition on the {{ data_volume_device }}"
-  parted:     
-    device: "{{ data_volume_device }}"
-    number: 1
-    state: present
-
-- name: "Create {{ data_volume_mount_path }} directory"
-  file:
-    path: "{{ data_volume_mount_path }}"
-    state: directory
-    mode: 0755
-    recurse: yes
-
-- name: "Create a ext4 filesystem on the {{ data_volume_partition }}"
-  filesystem:
-    fstype: ext4
-    dev: "{{ data_volume_partition }}"
-
-- name: "Mount data-volume {{ data_volume_partition }} to the {{ data_volume_mount_path }}"
-  mount:
-    path: "{{ data_volume_mount_path }}"
-    src: "{{ data_volume_partition }}"
-    state: mounted
-    fstype: ext4
 
 - name: "Create partition on the {{ backups_volume_device }}"
   parted:
@@ -84,13 +62,6 @@
     line: "127.0.0.1 localhost {{ set_hostname }} {{ inventory_hostname }}"
     state: present
 
-- name: "Update /etc/cloud/cloud.cfg.d/01_debian_cloud.cfg"
-  lineinfile:
-    dest: /etc/cloud/cloud.cfg.d/01_debian_cloud.cfg
-    regexp: '^manage_etc_hosts: true'
-    line: "manage_etc_hosts: false"
-    state: present
-
 - name: "Set timezone to Europe/Kiev"
   timezone:
     name: Europe/Kiev
@@ -122,8 +93,3 @@
   copy:
     src: "files/vimrc"
     dest: "/home/setevoy/.vimrc"
-
-- name: "Copy .vimrc to the 'admin' user"
-  copy:
-    src: "files/vimrc"
-    dest: "/home/admin/.vimrc"

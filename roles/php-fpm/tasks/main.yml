@@ -2,39 +2,39 @@
   include_vars:
     file: "{{ local_private_repo_location}}/vars/{{ env }}_web_projects.yml"
 
-- name: "Add repo GPG"
-  apt_key:
-    url: "{{ item }}"
-    state: present
-  with_items:
-    - https://packages.sury.org/php/apt.gpg
+#- name: "Add repo GPG"
+#  apt_key:
+#    url: "{{ item }}"
+#    state: present
+#  with_items:
+#    - https://packages.sury.org/php/apt.gpg
 
-- name: "Add PHP repo"
-  apt_repository:
-    repo: "{{ item }}"
-    state: present
-  with_items:
-    - deb https://packages.sury.org/php/ stretch main
+#- name: "Add PHP repo"
+#  apt_repository:
+#    repo: "{{ item }}"
+#    state: present
+#  with_items:
+#    - deb https://packages.sury.org/php/ stretch main
 
-- name: "Install PHP-7.3"
+- name: "Install PHP-7"
   apt:
     name: "{{ item }}"
     state: present
     update_cache: yes
   with_items:
-    - php7.3
+    - php
 
-- name: "Install PHP-7.3 extensions"
+- name: "Install PHP-7 extensions"
   apt:
     name: "{{ item }}"
     state: present
     update_cache: yes
-  with_items: "{{ php_7_3.extensions }}"
+  with_items: "{{ php_7_0.extensions }}"
 
 - name: "Copy PHP-FPM pool configs"
   template:
     src: "{{ local_private_repo_location }}/php-fpm/templates/{{ env }}/{{ item.1 }}.conf.j2"
-    dest: "{{ php_7_3.pool_dir }}/{{ item.1 }}.conf"
+    dest: "{{ php_7_0.pool_dir }}/{{ item.1 }}.conf"
     owner: "root"
     group: "root"
     mode: 0644
@@ -45,23 +45,11 @@
 - name: "Delete default www.conf"
   file:
     state: absent
-    path: "/etc/php/7.3/fpm/pool.d/www.conf"
+    path: "/etc/php/7.0/fpm/pool.d/www.conf"
 
-#- name: Ensure short_open_tag is on
-#  lineinfile:
-#    path: "{{ php_7_2.ini }}"
-#    regexp: '^short_open_tag'
-#    line: 'short_open_tag = On'
-
-#- name: Ensure memory_limit is 256M
-#  lineinfile:
-#    path: "{{ php_7_2.ini }}"
-#    regexp: '^memory_limit'
-#    line: 'memory_limit = 256M'
-
-- name: "Ensure php7.3-fpm service is running and will run on boot"
+- name: "Ensure php7.0-fpm service is running and will run on boot"
   systemd:
-    name: php7.3-fpm
+    name: php7.0-fpm
     state: restarted
     enabled: yes
     daemon_reload: yes

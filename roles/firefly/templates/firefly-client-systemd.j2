@@ -1,0 +1,17 @@
+[Unit]
+Description=Firefly service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+WorkingDirectory=/opt/firefly
+
+# Compose up
+ExecStart=/usr/local/bin/docker-compose -f firefly-compose.yml up
+
+# Compose down, remove containers and volumes
+ExecStop=/usr/local/bin/docker-compose -f firefly-compose.yml down -v
+
+[Install]
+WantedBy=multi-user.target

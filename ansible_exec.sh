@@ -23,7 +23,7 @@ ENV="rtfm-dev"
 # -v
 VAULT="/home/setevoy/Work/RTFM/Bitbucket/rtfm-infrastructure/aws-credenatials/rtfm_ansible_vault_pass"
 # -r
-RSA_KEY="/home/setevoy/Work/RTFM/Bitbucket/rtfm-infrastructure/aws-credenatials/rtfm-dev-eu-west-1a.pem"
+RSA_KEY="/home/setevoy/.ssh/do_rtfm_dev_droplet"
 
 while getopts "caSe:v:r:ht:" opt; do
 	case $opt in

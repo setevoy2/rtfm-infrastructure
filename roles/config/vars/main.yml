@@ -5,9 +5,6 @@ notify_email: !vault |
           61373739623637623766386162343036303031393332373537306435363433313762313864333261
           6265643131393939320a343938626264323635363534353334303163353566653866366161393930
           35313036616363393636656163623231346265353032396235363134383831346461
-data_volume_device: "/dev/xvdb"
-data_volume_partition: "/dev/xvdb1"
-data_volume_mount_path: "/data"
-backups_volume_device: "/dev/xvdc"
-backups_volume_partition: "/dev/xvdc1"
+backups_volume_device: "/dev/sda"
+backups_volume_partition: "/dev/sda1"
 backups_volume_mount_path: "/backups"

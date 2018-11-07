@@ -1,0 +1,23 @@
+- name: "Read private env-specific variables from the {{ local_private_repo_location}}/simple-backup/vars/{{ env }}_vars.yml"
+  include_vars:
+    file: "{{ local_private_repo_location}}/simple-backup/vars/{{ env }}_vars.yml"
+
+- name: "Clone script"
+  git:
+    repo: "https://github.com/setevoy2/simple-backup.git"
+    dest: "/opt/simple-backup"
+
+- name: "Copy backups config from the simple-backup/templates/{{ env }}"
+  template:
+    src: "{{ local_private_repo_location }}/simple-backup/templates/{{ env }}/simple-backup.ini.j2"
+    dest: "/usr/local/etc/{{ env }}-simple-backup.ini"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: "Add backup cronjob"
+  cron:
+    name: "simple-backup"
+    minute: "0"
+    hour: "1"    
+    job: "/opt/simple-backup/sitebackup.py -c /usr/local/etc/{{ env }}-simple-backup.ini >> /var/log/simple-backup.log"
